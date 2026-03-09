@@ -829,6 +829,7 @@ enum DisplayCondition {
     WhenShiftEnterHint,
     WhenNotShiftEnterHint,
     WhenUnderWSL,
+    WhenMacOS,
     WhenCollaborationModesEnabled,
 }
 
@@ -839,6 +840,7 @@ impl DisplayCondition {
             DisplayCondition::WhenShiftEnterHint => state.use_shift_enter_hint,
             DisplayCondition::WhenNotShiftEnterHint => !state.use_shift_enter_hint,
             DisplayCondition::WhenUnderWSL => state.is_wsl,
+            DisplayCondition::WhenMacOS => cfg!(target_os = "macos"),
             DisplayCondition::WhenCollaborationModesEnabled => state.collaboration_modes_enabled,
         }
     }
@@ -932,11 +934,15 @@ const SHORTCUTS: &[ShortcutDescriptor] = &[
     ShortcutDescriptor {
         id: ShortcutId::PasteImage,
         // Show Ctrl+Alt+V when running under WSL (terminals often intercept plain
-        // Ctrl+V); otherwise fall back to Ctrl+V.
+        // Ctrl+V), Cmd+V on macOS, otherwise fall back to Ctrl+V.
         bindings: &[
             ShortcutBinding {
                 key: key_hint::ctrl_alt(KeyCode::Char('v')),
                 condition: DisplayCondition::WhenUnderWSL,
+            },
+            ShortcutBinding {
+                key: key_hint::super_(KeyCode::Char('v')),
+                condition: DisplayCondition::WhenMacOS,
             },
             ShortcutBinding {
                 key: key_hint::ctrl(KeyCode::Char('v')),
@@ -1610,6 +1616,8 @@ mod tests {
 
         let expected_key = if is_wsl {
             key_hint::ctrl_alt(KeyCode::Char('v'))
+        } else if cfg!(target_os = "macos") {
+            key_hint::super_(KeyCode::Char('v'))
         } else {
             key_hint::ctrl(KeyCode::Char('v'))
         };
