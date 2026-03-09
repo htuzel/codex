@@ -13,6 +13,12 @@ const ALT_PREFIX: &str = "⌥ + ";
 #[cfg(all(not(test), not(target_os = "macos")))]
 const ALT_PREFIX: &str = "alt + ";
 const CTRL_PREFIX: &str = "ctrl + ";
+#[cfg(test)]
+const SUPER_PREFIX: &str = "cmd + ";
+#[cfg(all(not(test), target_os = "macos"))]
+const SUPER_PREFIX: &str = "⌘ + ";
+#[cfg(all(not(test), not(target_os = "macos")))]
+const SUPER_PREFIX: &str = "super + ";
 const SHIFT_PREFIX: &str = "shift + ";
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -53,6 +59,10 @@ pub(crate) const fn ctrl_alt(key: KeyCode) -> KeyBinding {
     KeyBinding::new(key, KeyModifiers::CONTROL.union(KeyModifiers::ALT))
 }
 
+pub(crate) const fn super_(key: KeyCode) -> KeyBinding {
+    KeyBinding::new(key, KeyModifiers::SUPER)
+}
+
 fn modifiers_to_string(modifiers: KeyModifiers) -> String {
     let mut result = String::new();
     if modifiers.contains(KeyModifiers::CONTROL) {
@@ -60,6 +70,9 @@ fn modifiers_to_string(modifiers: KeyModifiers) -> String {
     }
     if modifiers.contains(KeyModifiers::SHIFT) {
         result.push_str(SHIFT_PREFIX);
+    }
+    if modifiers.contains(KeyModifiers::SUPER) {
+        result.push_str(SUPER_PREFIX);
     }
     if modifiers.contains(KeyModifiers::ALT) {
         result.push_str(ALT_PREFIX);
